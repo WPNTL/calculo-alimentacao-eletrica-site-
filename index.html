@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alimentação Elétrica - Seleção de Condutores</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://projelmec.com.br/wp-content/uploads/2024/11/Projelmec-az.png" alt="Projelmec Logo" class="logo">
+            <h1>Alimentação Elétrica de Motores</h1>
+            <p>Seleção de Condutores Elétricos conforme Normas ABNT</p>
+            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <a href="https://projelmec.projelvent.com/wp-content/uploads/2023/03/Alimentacao-Eletrica.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-pdf" style="display: inline-block; text-decoration: none;">Ver em PDF</a>
+                <button class="btn" onclick="scrollToCalculator()">Calcular</button>
+            </div>
+        </div>
+
+        <div class="calculator-section">
+            <h2 class="calculator-title">Calculadora de Bitola</h2>
+            
+            <div class="input-grid">
+                <div class="form-group">
+                    <label for="motorType">Tipo de Instalação:</label>
+                    <select id="motorType">
+                        <option value="single">Motor Único</option>
+                        <option value="multiple">Múltiplos Motores</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="current">Corrente Nominal do Motor (A):</label>
+                    <input type="number" id="current" placeholder="Ex: 15" min="0" step="0.1">
+                </div>
+                
+                <div class="form-group" id="additionalCurrentGroup" style="display: none;">
+                    <label for="additionalCurrent">Corrente dos Demais Motores (A):</label>
+                    <input type="number" id="additionalCurrent" placeholder="Ex: 10" min="0" step="0.1">
+                </div>
+                
+                <div class="form-group">
+                    <label for="voltage">Tensão (V):</label>
+                    <select id="voltage">
+                        <option value="110">110V</option>
+                        <option value="220">220V</option>
+                        <option value="380">380V</option>
+                        <option value="440">440V</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="distance">Distância até o Motor (m):</label>
+                    <input type="number" id="distance" placeholder="Ex: 50" min="0" step="1">
+                </div>
+            </div>
+            
+            <button class="btn" onclick="calculateWire()">Calcular Bitola Necessária</button>
+            
+            <div class="result-box" id="resultBox">
+                <div class="result-title">Bitola Recomendada:</div>
+                <div class="result-value" id="resultValue">-</div>
+                <p id="resultDetails" style="color: var(--color-text-secondary); font-size: 14px; margin-top: 10px;"></p>
+            </div>
+            
+            <div class="warning-box">
+                <strong>Importante:</strong> A corrente considerada para dimensionamento é 1,25x a corrente nominal (fator de segurança). 
+                Para múltiplos motores: 1,25x maior motor + corrente nominal dos demais.
+            </div>
+        </div>
+
+        <div class="table-section">
+            <h2 class="section-title">Tabela de Seleção de Condutores</h2>
+            
+            <div class="table-container">
+                <table id="mainTable">
+                    <thead>
+                        <tr>
+                            <th class="first-col">Corrente (A)</th>
+                            <th>25m</th>
+                            <th>30m</th>
+                            <th>35m</th>
+                            <th>40m</th>
+                            <th>50m</th>
+                            <th>60m</th>
+                            <th>70m</th>
+                            <th>80m</th>
+                            <th>90m</th>
+                            <th>100m</th>
+                            <th>125m</th>
+                            <th>150m</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="first-col">15</td>
+                            <td>12</td><td>12</td><td>12</td><td>10</td><td>10</td><td>8</td>
+                            <td>8</td><td>8</td><td>6</td><td>6</td><td>6</td><td>4</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">20</td>
+                            <td>12</td><td>10</td><td>10</td><td>10</td><td>8</td><td>8</td>
+                            <td>6</td><td>6</td><td>6</td><td>4</td><td>4</td><td>4</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">30</td>
+                            <td>10</td><td>10</td><td>8</td><td>8</td><td>8</td><td>6</td>
+                            <td>6</td><td>4</td><td>4</td><td>4</td><td>2</td><td>2</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">40</td>
+                            <td>8</td><td>8</td><td>6</td><td>6</td><td>6</td><td>6</td>
+                            <td>4</td><td>4</td><td>4</td><td>2</td><td>2</td><td>1/0</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">55</td>
+                            <td>6</td><td>6</td><td>6</td><td>4</td><td>4</td><td>4</td>
+                            <td>2</td><td>2</td><td>2</td><td>1/0</td><td>1/0</td><td>1/0</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">70</td>
+                            <td>4</td><td>4</td><td>4</td><td>4</td><td>2</td><td>2</td>
+                            <td>2</td><td>1/0</td><td>1/0</td><td>1/0</td><td>2/0</td><td>2/0</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">95</td>
+                            <td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>1/0</td>
+                            <td>1/0</td><td>1/0</td><td>1/0</td><td>2/0</td><td>3/0</td><td>4/0</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">125</td>
+                            <td>1/0</td><td>1/0</td><td>1/0</td><td>1/0</td><td>1/0</td><td>2/0</td>
+                            <td>2/0</td><td>2/0</td><td>3/0</td><td>3/0</td><td>4/0</td><td>250</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">145</td>
+                            <td>2/0</td><td>2/0</td><td>2/0</td><td>2/0</td><td>2/0</td><td>2/0</td>
+                            <td>2/0</td><td>3/0</td><td>3/0</td><td>4/0</td><td>250</td><td>300</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">165</td>
+                            <td>3/0</td><td>3/0</td><td>3/0</td><td>3/0</td><td>3/0</td><td>3/0</td>
+                            <td>3/0</td><td>3/0</td><td>4/0</td><td>4/0</td><td>250</td><td>350</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">195</td>
+                            <td>4/0</td><td>4/0</td><td>4/0</td><td>4/0</td><td>4/0</td><td>4/0</td>
+                            <td>4/0</td><td>4/0</td><td>4/0</td><td>4/0</td><td>300</td><td>350</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">215</td>
+                            <td>250</td><td>250</td><td>250</td><td>250</td><td>250</td><td>250</td>
+                            <td>250</td><td>250</td><td>250</td><td>300</td><td>350</td><td>400</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">240</td>
+                            <td>300</td><td>300</td><td>300</td><td>300</td><td>300</td><td>300</td>
+                            <td>300</td><td>300</td><td>300</td><td>300</td><td>400</td><td>500</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">265</td>
+                            <td>350</td><td>350</td><td>350</td><td>350</td><td>350</td><td>350</td>
+                            <td>350</td><td>350</td><td>350</td><td>350</td><td>500</td><td>500</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">280</td>
+                            <td>400</td><td>400</td><td>400</td><td>400</td><td>400</td><td>400</td>
+                            <td>400</td><td>400</td><td>400</td><td>400</td><td>400</td><td>-</td>
+                        </tr>
+                        <tr>
+                            <td class="first-col">320</td>
+                            <td>500</td><td>500</td><td>500</td><td>500</td><td>500</td><td>500</td>
+                            <td>500</td><td>500</td><td>500</td><td>500</td><td>500</td><td>-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>Instruções de Uso</h3>
+            <ol>
+                <li><strong>Motor Único:</strong> Multiplique a corrente da placa por 1,25 e localize o valor na tabela.</li>
+                <li><strong>Múltiplos Motores:</strong> Calcule 1,25 × corrente do maior motor + corrente nominal dos demais.</li>
+                <li><strong>Seleção:</strong> Na tabela, cruze a linha da corrente calculada com a coluna da distância desejada.</li>
+                <li><strong>Bitola AWG:</strong> O valor encontrado é a bitola mínima recomendada em AWG.</li>
+                <li><strong>Normas:</strong> Dimensionamento conforme máxima capacidade de corrente e queda de tensão máxima de 5% (ABNT).</li>
+            </ol>
+        </div>
+
+        <footer class="footer">
+            <p>Feito por: <a href="https://terminal-portfolio-sand-omega.vercel.app/" target="_blank" rel="noopener noreferrer">Wesley</a></p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
