@@ -1,15 +1,30 @@
 // DOM elementos
 const motorTypeSelect = document.getElementById('motorType');
 const additionalCurrentGroup = document.getElementById('additionalCurrentGroup');
+const calculateBtn = document.getElementById('calculateBtn');
 
 // Event Listener pra tipo de motor
 motorTypeSelect.addEventListener('change', function() {
     if (this.value === 'multiple') {
         additionalCurrentGroup.style.display = 'block';
+        additionalCurrentGroup.style.animation = 'fadeIn 0.4s ease-out';
     } else {
         additionalCurrentGroup.style.display = 'none';
         document.getElementById('additionalCurrent').value = '';
     }
+});
+
+// Add feedback visual aos inputs
+const inputs = document.querySelectorAll('input, select');
+inputs.forEach(input => {
+    input.addEventListener('focus', function() {
+        this.parentElement.style.transform = 'scale(1.02)';
+        this.parentElement.style.transition = 'transform 0.2s';
+    });
+    
+    input.addEventListener('blur', function() {
+        this.parentElement.style.transform = 'scale(1)';
+    });
 });
 
 // tabela de bitolas AWG (conferir com o PDF do site)
@@ -39,7 +54,7 @@ const currentValues = [15, 20, 30, 40, 55, 70, 95, 125, 145, 165, 195, 215, 240,
 /**
  * pega o valor de corrente mais próximo (arredondado para cima) na tabela
  * @param {number} current - corrente calculada
- * @returns {number|null} - valor de corrente da tabela ou null se ficar fora do intervalo
+ * @returns {number|null} - valor de corrente da tabela ou null se fora do intervalo
  */
 function findClosestCurrent(current) {
     for (let i = 0; i < currentValues.length; i++) {
@@ -64,18 +79,60 @@ function findClosestDistance(distance) {
     return null;
 }
 
+/**
+ * mostra notificação com detalhes opcionais
+ * @param {string} message - mensagem principal
+ * @param {string} type - tipo da notificação (errr ou success)
+ * @param {string|null} details - detalhes adicionais (HTML)
+ */
+function showNotification(message, type = 'error', details = null) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    
+    let content = `<div class="notification-title">${message}</div>`;
+    
+    if (details) {
+        content += `<div class="notification-details">${details}</div>`;
+        content += `<div class="notification-hint">Clique para ver o resultado na página</div>`;
+        
+        notification.addEventListener('click', () => {
+            const resultBox = document.getElementById('resultBox');
+            resultBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            notification.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => notification.remove(), 300);
+        });
+    }
+    
+    notification.innerHTML = content;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.animation = 'fadeOut 0.3s ease-out';
+        setTimeout(() => notification.remove(), 300);
+    }, details ? 8000 : 3000);
+}
+
+
 // função de cálculo da bitola do condutor necessária
-function calculateWire() {
+async function calculateWire() {
     const motorType = document.getElementById('motorType').value;
     const currentInput = parseFloat(document.getElementById('current').value);
     const distance = parseFloat(document.getElementById('distance').value);
     const voltage = document.getElementById('voltage').value;
 
-    // valida os comapos obrigatórios
+    // Valida os campos obrigatórios
     if (!currentInput || !distance) {
-        alert('Por favor, preencha todos os campos obrigatórios.');
+        showNotification('Por favor, preencha todos os campos obrigatórios!');
         return;
     }
+
+    // Animação de loading no botão
+    const btnText = calculateBtn.innerHTML;
+    calculateBtn.innerHTML = '<div class="spinner"></div>';
+    calculateBtn.disabled = true;
+
+    // Simula processamento para mostrar animação
+    await new Promise(resolve => setTimeout(resolve, 600));
 
     // calculo da corrente considerando o fator de segurança
     let calculatedCurrent;
@@ -92,20 +149,24 @@ function calculateWire() {
 
     // Verifica se os valores estão dentro do intervalo da tabela
     if (tableCurrent === null || distanceIndex === null) {
-        alert('Valores fora do intervalo da tabela. Consulte um engenheiro eletricista.');
+        showNotification('Valores fora do intervalo da tabela. Consulte um engenheiro eletricista.');
+        calculateBtn.innerHTML = btnText;
+        calculateBtn.disabled = false;
         return;
     }
-
+    
     // Pega a bitola recomendada
     const wireSize = wireTable[tableCurrent][distanceIndex];
 
-    // Verifica se existe uma bitola disponível pra essa combinação
+    // Verifica se existe uma bitola disponível para essa combinação
     if (wireSize === null) {
-        alert('Combinação de corrente e distância não disponível na tabela.');
+        showNotification('Combinação de corrente e distância não disponível na tabela.');
+        calculateBtn.innerHTML = btnText;
+        calculateBtn.disabled = false;
         return;
     }
 
-    // Mostra o resultado
+    // Mostra resultado com animação agora...
     const resultBox = document.getElementById('resultBox');
     const resultValue = document.getElementById('resultValue');
     const resultDetails = document.getElementById('resultDetails');
@@ -119,15 +180,29 @@ function calculateWire() {
     `;
 
     resultBox.classList.add('show');
+    resultBox.style.animation = 'fadeIn 0.5s ease-out';
 
-    // mostra a célula correspondente na tabela
     highlightTableCell(tableCurrent, distanceIndex);
+
+    calculateBtn.innerHTML = btnText;
+    calculateBtn.disabled = false;
+
+    // mostra notificação com os detalhes
+    const notificationDetails = `
+        <strong>Bitola Recomendada: AWG ${wireSize}</strong><br>
+        Corrente calculada: ${calculatedCurrent.toFixed(2)} A<br>
+        Corrente de referência: ${tableCurrent} A<br>
+        Distância de referência: ${distances[distanceIndex]} m<br>
+        Tensão: ${voltage} V
+    `;
+    
+    showNotification('Cálculo realizado com sucesso!', 'success', notificationDetails);
 }
 
 /**
  * mostra a célula correspondente na tabela
  * @param {number} current - corrente de referência
- * @param {number} distIndex - [indice da distância
+ * @param {number} distIndex - índice da distância
  */
 function highlightTableCell(current, distIndex) {
     const table = document.getElementById('mainTable');
@@ -159,3 +234,13 @@ function scrollToCalculator() {
         calculatorSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
+
+// Enter pra calcular
+document.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        const activeElement = document.activeElement;
+        if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'SELECT') {
+            calculateWire();
+        }
+    }
+});
